@@ -1,10 +1,20 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const fs = require("fs");
+const path = require("path");
 const authRoutes = require('./routes/auth');
 const borrowItemsLogRoute = require('./routes/borrowItemsLog'); 
 
 dotenv.config();
+
+// Ensure uploads folder exists (important for cloud)
+const uploadDir = path.join(__dirname, "uploads");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 const app = express();
 
 
@@ -43,7 +53,8 @@ mongoose
   .then(() => {
     console.log('MongoDB connected');
 
-    const PORT = 5000;
+    //const PORT = 5000;
+    const PORT = process.env.PORT || 5000;
     const HOST = '0.0.0.0';
 
     app.listen(PORT, HOST, () =>
