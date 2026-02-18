@@ -250,7 +250,7 @@ router.get('/:studentId', async (req, res) => {
   status: { $ne: 'RETURNED' }
 }).populate('labId');
 
-res.status(200).json(borrowedItems);
+//res.status(200).json(borrowedItems);
     if (!borrowedItems || borrowedItems.length === 0) {
       return res.status(404).json({ message: 'No borrowed items found for this student.' });
     }
