@@ -39,8 +39,23 @@ app.get('/', (req, res) => {
 
 
 /* ------------------ GLOBAL ERROR HANDLER (LAST) ------------------ */
+
+/*app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    message: 'Something went wrong',
+    error: err.message
+  });
+});*/
+
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
+
+  // Prevent double response
+  if (res.headersSent) {
+    return next(err);
+  }
+
   res.status(500).json({
     message: 'Something went wrong',
     error: err.message

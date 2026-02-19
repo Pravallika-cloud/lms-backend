@@ -255,10 +255,10 @@ router.get('/:studentId', async (req, res) => {
       return res.status(404).json({ message: 'No borrowed items found for this student.' });
     }
 
-    res.status(200).json(borrowedItems);
+    return res.status(200).json(borrowedItems);
   } catch (error) {
     console.error('Error fetching borrowed items:', error);
-    res.status(500).json({ message: 'Internal server error.',error: error.message,
+    return res.status(500).json({ message: 'Internal server error.',error: error.message,
     stack: error.stack });
   }
 });
