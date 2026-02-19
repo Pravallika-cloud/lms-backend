@@ -74,11 +74,15 @@ if (new Set(names).size !== names.length) {
    //   ? req.files.map(file => file.path)
    //   : [];
 
-const imagePaths = req.files && req.files.length > 0
+/*const imagePaths = req.files && req.files.length > 0
   ? req.files.map(file => {
       const cleanPath = file.path.replace(/\\/g, '/');
       return cleanPath;
     })
+  : [];*/
+
+const imagePaths = req.files && req.files.length > 0
+  ? req.files.map(file => `/uploads/${file.filename}`)
   : [];
 
     const newLog = new BorrowItemsLog({
@@ -179,8 +183,12 @@ borrowLog.status = allReturned ? "RETURNED" : "PARTIAL_RETURN";
       borrowLog.returnDate = new Date();
 
       // 5️⃣ Save images
-   const imagePaths = req.files && req.files.length > 0
+ /*  const imagePaths = req.files && req.files.length > 0
   ? req.files.map(file => file.path.replace(/\\/g, '/'))
+  : []; */
+
+const imagePaths = req.files && req.files.length > 0
+  ? req.files.map(file => `/uploads/${file.filename}`)
   : [];
 
 borrowLog.images.push(...imagePaths);
