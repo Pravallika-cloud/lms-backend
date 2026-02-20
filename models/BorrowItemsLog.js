@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const BorrowItemsLogSchema = new mongoose.Schema({
+userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
   labId: { type: mongoose.Schema.Types.ObjectId, ref: 'Lab', required: true },
   studentId: { type: String, required: true },
   studentName: { type: String, required: true },
