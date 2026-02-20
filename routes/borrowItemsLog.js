@@ -5,6 +5,9 @@ const path = require('path');
 const BorrowItemsLog = require('../models/BorrowItemsLog');
 const Lab = require('../models/Lab');
 
+const authMiddleware = require('../middleware/authMiddleware');
+
+
 // Setup storage for uploaded files
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -22,8 +25,10 @@ const upload = multer({ storage: storage });
 // -------------------
 // 📦 POST /api/borrow  (Submit Borrow Log)
 // -------------------
-router.post('/', upload.array('images'), async (req, res) => {
+//router.post('/', upload.array('images'), async (req, res) => {
+router.post('/', authMiddleware, upload.array('images'), async (req, res) => {
   try {
+    const userId = req.user.userId;
     console.log("Incoming body:", req.body);
     console.log("Incoming files:", req.files);
 
@@ -86,6 +91,7 @@ const imagePaths = req.files && req.files.length > 0
   : [];
 
     const newLog = new BorrowItemsLog({
+      userId,
       labId,
       studentId,
       studentName,
@@ -112,6 +118,7 @@ const imagePaths = req.files && req.files.length > 0
 // -------------------
 router.put(
   '/return/:logId',
+  authMiddleware,
   upload.array('images'),
   async (req, res) => {
     try {
@@ -152,11 +159,22 @@ router.put(
       }
     
       // 2️⃣ Fetch borrow log
-      const borrowLog = await BorrowItemsLog.findById(logId).populate('labId');
+    //  const borrowLog = await BorrowItemsLog.findById(logId).populate('labId');
+
+  const borrowLog = await BorrowItemsLog.findOne({
+  _id: logId,
+  userId: req.user.userId
+}).populate('labId');
 
       if (!borrowLog) {
         return res.status(404).json({ message: "Borrow log not found" });
       }
+
+if (borrowLog.status === "RETURNED") {
+  return res.status(400).json({
+    message: "All items already returned"
+  });
+}
 
       // 3️⃣ Update item quantities
       returnedItems.forEach(returned => {
@@ -204,7 +222,11 @@ borrowLog.images.push(...imagePaths);
 
     } catch (error) {
       console.error("Error returning items:", error);
-      res.status(400).json({
+      const statusCode = error.message.includes("exceeds") ||
+                     error.message.includes("not found") ||
+                     error.message.includes("missing")
+                     ? 400 : 500;
+      res.status(statusCode).json({
         message: error.message
         });
     }
@@ -214,9 +236,11 @@ borrowLog.images.push(...imagePaths);
 // -------------------
 // 📦 GET /api/borrow  (Fetch ALL Borrow Logs - ViewAllItems)
 // -------------------
-router.get('/', async (req, res) => {
+//router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const logs = await BorrowItemsLog.find({
+      userId: req.user.userId,
       status: { $ne: 'RETURNED' }   // show active borrows only
     })
       .populate('labId')
@@ -249,12 +273,14 @@ router.get('/', async (req, res) => {
 // -------------------
 // 📦 GET /api/borrow/:studentId  (Fetch Borrowed Items by Student ID)
 // -------------------
-router.get('/:studentId', async (req, res) => {
+//router.get('/:studentId', async (req, res) => {
+router.get('/:studentId', authMiddleware, async (req, res) => {
   try {
     const { studentId } = req.params;
 
     const borrowedItems = await BorrowItemsLog.find({
   studentId: studentId,
+  userId: req.user.userId,
   status: { $ne: 'RETURNED' }
 }).populate('labId');
 
