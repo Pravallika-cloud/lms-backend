@@ -37,6 +37,14 @@ app.get('/', (req, res) => {
   res.json({ message: 'Server is alive and reachable!', timestamp: new Date().toISOString() });
 });
 
+// HEALTH ROUTE to check server is alive and reachable
+app.get('/health', (req, res) => {
+  res.json({
+    message: 'Server is alive and reachable!',
+    timestamp: new Date().toISOString()
+  });
+});
+
 
 /* ------------------ GLOBAL ERROR HANDLER (LAST) ------------------ */
 
